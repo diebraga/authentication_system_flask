@@ -1,5 +1,5 @@
+from models.user import User
 from flask import Flask, request, jsonify
-from flask_swagger_ui import get_swaggerui_blueprint
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -9,18 +9,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 
 db = SQLAlchemy(app)
 
-SWAGGER_URL = '/swagger'
-API_URL = '/static/swagger.yaml'
-
-swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={
-        'authentication': "Authentication App"
-    }
-)
-
-app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+# Importer les modèles après avoir défini db pour éviter les problèmes d'importation circulaire
 
 
 @app.route("/init", methods=["GET"])
