@@ -1,20 +1,20 @@
-from models.user import User
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from database import db
+from models.user import User
 
 app = Flask(__name__)
-
 app.config["SECRET_KEY"] = "YOUR SECRET KEY"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 
-db = SQLAlchemy(app)
-
-# Importer les modèles après avoir défini db pour éviter les problèmes d'importation circulaire
+# Initialize db with the app context
+db.init_app(app)
 
 
 @app.route("/init", methods=["GET"])
 def init_func():
-    return "init"
+    with app.app_context():
+        db.create_all()
+    return "Database initialized"
 
 
 @app.errorhandler(404)
