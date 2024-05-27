@@ -1,13 +1,16 @@
 from flask import Flask, request, jsonify
 from database import db
 from models.user import User
+from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "YOUR SECRET KEY"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 
 # Initialize db with the app context
+login_manager = LoginManager()
 db.init_app(app)
+login_manager.init_app(app)
 
 
 @app.route("/init", methods=["GET"])
@@ -15,6 +18,18 @@ def init_func():
     with app.app_context():
         db.create_all()
     return "Database initialized"
+
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if username and password:
+        return jsonify({"username": username, "password": password}), 200
+    else:
+        return jsonify({"message": "invalid credentials"}), 400
 
 
 @app.errorhandler(404)
