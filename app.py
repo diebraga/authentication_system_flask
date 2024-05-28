@@ -50,7 +50,25 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return ({"message": "user logged out"})
+    return jsonify({"message": "user logged out"})
+
+
+@app.route("/user", methods=["POST"])
+def create_user():
+    data = request.json
+    username = data.get("username")
+    password = data.get("password")
+
+    if password and username:
+        user_exists = User.query.filter_by(username=username).first()
+        if user_exists:
+            return jsonify({"message": "user already exists"}), 400
+        else:
+            user = User(username=username, password=password)
+            db.session.add(user)
+            db.session.commit()
+            return jsonify({"message": "user registered"}), 200
+    return jsonify({"message": "Invalid credentials"}), 400
 
 
 @app.errorhandler(404)
