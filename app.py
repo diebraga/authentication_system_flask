@@ -27,6 +27,48 @@ def init_func():
     return "Database initialized"
 
 
+@app.route("/user/<int:user_id>", methods=["GET"])
+@login_required
+def read_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+
+    if user:
+        return jsonify({"user": user.username})
+
+    return jsonify({"message": "Not found"}), 404
+
+
+@app.route("/user/<int:user_id>", methods=["DELETE"])
+@login_required
+def delete_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+
+    if user_id == current_user.id:
+        return jsonify({"message": "You can't delete yourself"}), 400
+    else:
+        if user:
+            db.session.delete(user)
+            db.session.commit()
+            return jsonify({"message": "user deleted"})
+
+        return jsonify({"message": "Not found"}), 404
+
+
+@app.route("/user/<int:user_id>", methods=["PUT"])
+@login_required
+def update_user(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    data = request.json
+    password = data.get("password")
+
+    if user and password:
+        user.password = password
+        db.session.commit()
+        return jsonify({"message": f"user {user_id} updated"})
+
+    return jsonify({"message": "Not found"}), 404
+
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
