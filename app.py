@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import db
 from models.user import User
-from flask_login import LoginManager
+from flask_login import LoginManager, login_user, current_user
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "YOUR SECRET KEY"
@@ -11,6 +11,13 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 login_manager = LoginManager()
 db.init_app(app)
 login_manager.init_app(app)
+
+login_manager.login_view = "login"
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 
 @app.route("/init", methods=["GET"])
@@ -30,8 +37,9 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user is None:
             return jsonify({"message": "Not found"}), 404
-        if user and user.check_password(password):
-            return jsonify({"message": "Login successful"}), 200
+        if user and user.password == (password):
+            login_user(user)
+            return jsonify({"message": "Login successful", "current_user": user.username}), 200
         else:
             return jsonify({"message": "Invalid credentials"}), 400
     else:
