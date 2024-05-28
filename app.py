@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 from database import db
 from models.user import User
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "YOUR SECRET KEY"
@@ -39,11 +39,18 @@ def login():
             return jsonify({"message": "Not found"}), 404
         if user and user.password == (password):
             login_user(user)
-            return jsonify({"message": "Login successful", "current_user": user.username}), 200
+            return jsonify({"message": "Login successful"}), 200
         else:
             return jsonify({"message": "Invalid credentials"}), 400
     else:
         return jsonify({"message": "Invalid credentials"}), 400
+
+
+@app.route("/logout", methods=["GET"])
+@login_required
+def logout():
+    logout_user()
+    return ({"message": "user logged out"})
 
 
 @app.errorhandler(404)
