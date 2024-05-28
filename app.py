@@ -27,9 +27,15 @@ def login():
     password = data.get("password")
 
     if username and password:
-        return jsonify({"username": username, "password": password}), 200
+        user = User.query.filter_by(username=username).first()
+        if user is None:
+            return jsonify({"message": "Not found"}), 404
+        if user and user.check_password(password):
+            return jsonify({"message": "Login successful"}), 200
+        else:
+            return jsonify({"message": "Invalid credentials"}), 400
     else:
-        return jsonify({"message": "invalid credentials"}), 400
+        return jsonify({"message": "Invalid credentials"}), 400
 
 
 @app.errorhandler(404)
